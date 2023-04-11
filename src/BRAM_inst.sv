@@ -5,7 +5,7 @@ module BRAM_inst
   input [(DATA_WIDTH-1):0] data_in,
   input [(ADDR_WIDTH-1):0] read_addr, write_addr,
   input wr_en, clk,
-  output [(DATA_WIDTH-1):0] data_out
+  output logic [(DATA_WIDTH-1):0] data_out
 );
 
 (* ram_style = "block" *) reg [DATA_WIDTH-1:0] ram[2**ADDR_WIDTH-1:0];
@@ -16,10 +16,12 @@ always @ (posedge clk) begin
       
   if (wr_en) begin
     ram[write_addr] <= data_in;
+  data_out <= ram[read_addr];
   end
+
 end
 
 // assign data_out = ram[read_addr_reg];
-assign data_out = ram[read_addr];
+// assign data_out = ram[read_addr];
 
 endmodule

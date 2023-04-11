@@ -5,3 +5,5 @@ SenderExpandHash.runs/*
 *.pb
 *.log
 *.ini
+SenderExpandHash.*
+*.zip

@@ -12,11 +12,12 @@ module StateMachine
   output done,
   output [1:0] state,
   output mB_wr_en,
-  output [D+2:0] mB_w_addr,
-  output [D+2:0] mB_r_addr,
+  output mB_rd_en,
+  output [D-1:0] mB_w_addr,
+  output [D-1:0] mB_r_addr,
   output mB_r_offset,
   output msg_wr_en,
-  output [D+2:0] msg_w_addr
+  output [D-1:0] msg_w_addr
 );
 
 enum bit      {EXPAND, HASH} funcs;
@@ -103,7 +104,7 @@ always_ff @(posedge clk, negedge rst) begin
         if (write_index == 0) begin
           depth <= 0;
           index <= 0;
-          write_index <= 0 + AES_LATENCY;
+          write_index <= 1 + AES_LATENCY;
           width <= 1;
           expand_state <= EXP_CAL;
         end
@@ -120,7 +121,7 @@ always_ff @(posedge clk, negedge rst) begin
               depth <= depth + 1;
               width <= width << 1;
               index <= (width << 1) - 1;
-              write_index <= (width << 1) - 1 + AES_LATENCY;
+              write_index <= (width << 1) + AES_LATENCY;
             end
             else begin
               if (index > 0) begin
@@ -136,7 +137,7 @@ always_ff @(posedge clk, negedge rst) begin
     else begin // func == HASH
       if (hash_state == HASH_IDLE) begin
         index <= 2**D-1;
-        write_index <= 2**D-1+AES_LATENCY;
+        write_index <= 2**D+AES_LATENCY;
         hash_state <= HASH_CAL;
       end
       else if (hash_state == HASH_CAL) begin

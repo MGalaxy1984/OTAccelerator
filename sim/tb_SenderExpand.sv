@@ -17,11 +17,13 @@ parameter D = 3;
 enum bit {EXPAND, HASH} funcs;
 
 logic [127:0] mB_ram[2**(D-1) * 16];
-logic [D+2:0] mB_r_addr, mB_w_addr;
+logic [D-1:0] mB_r_addr, mB_w_addr;
 logic mB_wr_en;
+logic [127:0] mB_out[8]; 
 
-logic [$clog2(D):0] depth;
-logic [D:0] index; 
+logic [7:0] depth;
+logic [31:0] index; 
+logic mB_r_offset;
 
 logic [127:0] left_in[8];
 logic [127:0] right_in[8];
@@ -146,12 +148,14 @@ generate
     assign right_in[j] = ei.right_in[j*128+127:j*128];
     assign left_out[j] = ei.left_out[j*128+127:j*128];
     assign right_out[j] = ei.right_out[j*128+127:j*128];
+    assign mB_out[j]= ei.mB_out[j*128+127:j*128];
   end
 endgenerate
 
 assign mB_r_addr = ei.mB_r_addr;
 assign mB_w_addr = ei.mB_w_addr;
 assign mB_wr_en = ei.mB_wr_en;
+assign mB_r_offset = ei.mB_r_offset;
 
 assign left_key = ei.left_key;
 assign right_key = ei.right_key;
@@ -166,6 +170,25 @@ end
 always @(posedge clk) begin
   clock_cycles = clock_cycles + 1;
 end
+
+/* SenderTreeCluster
+#(
+  .TREE_NUM(1),
+  .D(D), 
+  .AES_LATENCY(29)
+)
+ei
+(
+  .clk   (clk),
+  .rst   (rst),
+  .enable (start),
+  .func  (func),
+  .seed  (seed),
+  .delta (delta),
+  .msg_index(msg_index),
+  .done  (done),
+  .out   (out)
+); */
 
 SenderTreeTop
 #(

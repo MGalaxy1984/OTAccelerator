@@ -17,6 +17,8 @@ module SenderTreeTop
   output reg [127:0] out
 );
 
+parameter END_D = D + 3;
+
 always_comb begin
   case(msg_index % 16)
     0:  out[127:64] = m1_out[63:0];
@@ -75,7 +77,6 @@ sm
   .done(done),
   .state(state),
   .mB_wr_en(mB_wr_en),
-  .mB_rd_en(mB_rd_en),
   .mB_w_addr(mB_w_addr),
   .mB_r_addr(mB_r_addr),
   .mB_r_offset(mB_r_offset),
@@ -83,33 +84,29 @@ sm
   .msg_w_addr(msg_w_addr)
 );
 
-wire mB_wr_en, mB_rd_en;
+wire mB_wr_en;
 wire [2047:0] mB_in, mB_raw_out;
 wire [1023:0] mB_out;
-wire [D-2:0] mB_r_addr, mB_w_addr;
+wire [END_D-1:0] mB_r_addr, mB_w_addr;
 wire mB_r_offset;
 
 assign mB_in[2047:1024] = right_out;
 assign mB_in[1023:0] = left_out;
-// assign mB_out = mB_r_offset ? mB_raw_out[2047:1024] : mB_raw_out[1023:0];
+assign mB_out = mB_r_offset ? mB_raw_out[2047:1024] : mB_raw_out[1023:0];
 
 // mB ram
-URAM_inst 
+BRAM_inst 
 #(
   .DATA_WIDTH(2048), 
-  .ADDR_WIDTH(D-1)
+  .ADDR_WIDTH(END_D)
 )
 mB
 (
   .clk(clk),
-  .rst(rst),
   .wr_en(mB_wr_en),
-  .rd_en(mB_rd_en),
-  .mem_en(1'b1),
   .data_in(mB_in),
-  .data_out(mB_out),
+  .data_out(mB_raw_out),
   .read_addr(mB_r_addr),
-  .read_r_bit(mB_r_offset),
   .write_addr(mB_w_addr)
 );
 
@@ -170,9 +167,9 @@ right
 );
 
 wire msg_wr_en;
-wire [D-1:0] msg_w_addr;
-wire [D-1:0] m0_r_addr, m1_r_addr;
-wire [D-1:0] m0_w_addr, m1_w_addr;
+wire [END_D-1:0] msg_w_addr;
+wire [END_D-1:0] m0_r_addr, m1_r_addr;
+wire [END_D-1:0] m0_w_addr, m1_w_addr;
 wire [1023:0] m0_in, m1_in;
 wire [1023:0] m0_out, m1_out;
 
@@ -188,7 +185,7 @@ assign m1_in = right_out;
 BRAM_inst 
 #(
   .DATA_WIDTH(1024), 
-  .ADDR_WIDTH(D)
+  .ADDR_WIDTH(END_D)
 )
 m0
 (
@@ -203,7 +200,7 @@ m0
 BRAM_inst 
 #(
   .DATA_WIDTH(1024), 
-  .ADDR_WIDTH(D)
+  .ADDR_WIDTH(END_D)
 )
 m1
 (
