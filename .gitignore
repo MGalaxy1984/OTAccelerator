@@ -1,0 +1,7 @@
+SenderExpandHash.cache/*.*
+*.db
+SenderExpandHash.runs/*
+*.dcp
+*.pb
+*.log
+*.ini
